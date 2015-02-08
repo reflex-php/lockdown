@@ -49,9 +49,6 @@ class LockdownServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		require __DIR__ . "/exceptions.php";
-		require __DIR__ . "/helpers.php";
-
 		$this->registerLockdownConfiguration();
 		$this->registerLockdownFacade();
 		$this->registerLockdownCacheLayer();
