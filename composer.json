@@ -1,0 +1,33 @@
+{
+    "name": "reflex/lockdown",
+    "description": "PHP 5.4 ACL system",
+    "keywords": ["auth", "laravel", "acl"],
+    "authors": [
+        {
+            "name": "Mike Shellard",
+            "email": "me@aziri.us",
+            "role": "Head Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "5.*",
+        "illuminate/cookie": "5.*",
+        "illuminate/cache": "5.*",
+        "illuminate/database": "5.*",
+        "illuminate/http": "5.*"
+    },
+    "autoload": {
+        "classmap": [
+            "src/migrations"
+        ],
+        "psr-4":    {
+            "Reflex\\Lockdown\\": "src/"
+        },
+        "files":    [
+            "src/helpers.php",
+            "src/exceptions.php"
+        ]
+    },
+    "minimum-stability": "stable"
+}
