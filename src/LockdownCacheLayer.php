@@ -2,13 +2,14 @@
 namespace Reflex\Lockdown;
 
 use Illuminate\Cache\CacheManager;
+use Illuminate\Contracts\Cache\Factory as FactoryContract;
 use Closure;
 
 class LockdownCacheLayer
 {
     /**
      * CacheManager instance
-     * @var Illuminate\Cache\CacheManager
+     * @var Illuminate\Contracts\Cache\Factory
      */
     protected $cache;
 
@@ -32,13 +33,13 @@ class LockdownCacheLayer
 
     /**
      * Constructor
-     * @param Illuminate\Cache\CacheManager $cache   
-     * @param boolean                       $enabled 
-     * @param integer                       $expire  
-     * @param string                        $id      
+     * @param Illuminate\Contracts\Cache\Factory $cache   
+     * @param boolean                            $enabled 
+     * @param integer                            $expire  
+     * @param string                             $id      
      * @return void 
      */
-    public function __construct(CacheManager $cache, $enabled, $expire, $id)
+    public function __construct(FactoryContract $cache, $enabled, $expire, $id)
     {
         $this->cache    =   $cache;
         $this->enabled  =   $enabled;
