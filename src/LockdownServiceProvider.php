@@ -263,6 +263,7 @@ class LockdownServiceProvider extends ServiceProvider
 				);
 			}
 		);
+		$this->app->alias('lockdown', 'Reflex\Lockdown\Lockdown');
 	}
 
 	/**
