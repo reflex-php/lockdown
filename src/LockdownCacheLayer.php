@@ -9,7 +9,7 @@ class LockdownCacheLayer
 {
     /**
      * CacheManager instance
-     * @var Illuminate\Contracts\Cache\Factory
+     * @var \Illuminate\Contracts\Cache\Factory
      */
     protected $cache;
 
@@ -33,10 +33,10 @@ class LockdownCacheLayer
 
     /**
      * Constructor
-     * @param Illuminate\Contracts\Cache\Factory $cache   
-     * @param boolean                            $enabled 
-     * @param integer                            $expire  
-     * @param string                             $id      
+     * @param \Illuminate\Contracts\Cache\Factory $cache   
+     * @param boolean                             $enabled 
+     * @param integer                             $expire  
+     * @param string                              $id      
      * @return void 
      */
     public function __construct(FactoryContract $cache, $enabled, $expire, $id)
@@ -68,7 +68,7 @@ class LockdownCacheLayer
     /**
      * Set enabled
      * @param  boolean $enabled 
-     * @return Reflex\Lockdown\LockdownCacheLayer 
+     * @return \Reflex\Lockdown\LockdownCacheLayer 
      */
     public function setEnabled($enabled)
     {
@@ -89,7 +89,7 @@ class LockdownCacheLayer
     /**
      * Set expire
      * @param  integer $expire 
-     * @return Reflex\Lockdown\LockdownCacheLayer 
+     * @return \Reflex\Lockdown\LockdownCacheLayer 
      */
     public function setExpire($expire)
     {
@@ -110,7 +110,7 @@ class LockdownCacheLayer
     /**
      * Set ID
      * @param  mixed $id 
-     * @return Reflex\Lockdown\LockdownCacheLayer 
+     * @return \Reflex\Lockdown\LockdownCacheLayer 
      */
     public function setId($id)
     {

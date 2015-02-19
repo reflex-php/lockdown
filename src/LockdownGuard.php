@@ -9,7 +9,6 @@ use Illuminate\Auth\Guard as IlluminatedGuard;
 use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Contracts\Auth\UserProvider;
-use Illuminate\Support\Traits\MacroableTrait;
 
 /**
  * LockdownGuard which extends Auth
@@ -37,7 +36,7 @@ class LockdownGuard extends IlluminatedGuard
     /**
      * Create a new authentication guard.
      *
-     * @param  Reflex\Lockdown\Lockdown                   $lockdown
+     * @param  \Reflex\Lockdown\Lockdown                  $lockdown
      * @param  \Illuminate\Contracts\Auth\UserProvider    $provider
      * @param  \Illuminate\Session\Store                  $session
      * @param  \Symfony\Component\HttpFoundation\Request  $request
