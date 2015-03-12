@@ -39,6 +39,7 @@ class LockdownServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
+		$this->registerLockdownMigrations();
 		$this->registerAuthTakeover();
 	}
 
@@ -58,6 +59,18 @@ class LockdownServiceProvider extends ServiceProvider
 		$this->registerLockdown();
 		$this->registerLockdownGuard();
 		$this->registerCommands();
+	}
+
+	protected function registerLockdownMigrations()
+	{
+		if (method_exists($this, 'publishes')) {
+			$this->publishes(
+				[
+					__DIR__ . '/migrations/'=>	base_path('/database/migrations'),
+				],
+				'migrations'
+			);
+		}
 	}
 
 	/**

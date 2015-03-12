@@ -126,7 +126,7 @@ class Lockdown
      * Get a role
      * @param  string|Reflex\Lockdown\Roles\RoleInterface $key 
      * @return Reflex\Lockdown\Roles\RoleInterface    
-     * @throws RoleNotFoundException If Role isn't found 
+     * @throws Reflex\Lockdown\RoleNotFoundException If Role isn't found 
      */
     public function findRoleByKey($key)
     {
@@ -147,14 +147,21 @@ class Lockdown
             return $result;
         }
 
-        throw new RoleNotFoundException;
+        $exceptionMessage   =   "The role '%(rolekey)s' cannot be found.";
+
+        throw new RoleNotFoundException(
+            isprintf(
+                $exceptionMessage,
+                ['rolekey' => $key]
+            )
+        );
     }
 
     /**
      * Get permission
      * @param  string|Reflex\Lockdown\Permissions\PermissionInterface $key 
      * @return Reflex\Lockdown\Permissions\PermissionInterface   
-     * @throws PermissionNotFoundException If Permission isn't found   
+     * @throws Reflex\Lockdown\PermissionNotFoundException If Permission isn't found   
      */
     public function findPermissionByKey($key)
     {
@@ -173,14 +180,21 @@ class Lockdown
             return $result;
         }
 
-        throw new PermissionNotFoundException;
+        $exceptionMessage   =   "The permission '%(permissionkey)s' cannot be found.";
+
+        throw new PermissionNotFoundException(
+            isprintf(
+                $exceptionMessage,
+                ['permissionkey' => $key]
+            )
+        );
     }
 
     /**
      * Find a user by their ID
      * @param  integer|Reflex\Lockdown\Users\UserInterface $id 
      * @return Reflex\Lockdown\Users\UserInterface
-     * @throws UserNotFoundException If User isn't found
+     * @throws Reflex\Lockdown\UserNotFoundException If User isn't found
      */
     public function findUserById($id)
     {
@@ -200,7 +214,14 @@ class Lockdown
             return $result;
         }
 
-        throw new UserNotFoundException;
+        $exceptionMessage   =   "A user with the ID '%(userid)s' cannot be found.";
+
+        throw new UserNotFoundException(
+            isprintf(
+                $exceptionMessage,
+                ['userid' => $id]
+            )
+        );
     }
 
     /**
@@ -227,7 +248,14 @@ class Lockdown
             return $result;
         }
 
-        throw new UserNotFoundException;
+        $exceptionMessage   =   "A user with the login '%(userlogin)s' cannot be found.";
+
+        throw new UserNotFoundException(
+            isprintf(
+                $exceptionMessage,
+                ['userlogin' => $login]
+            )
+        );
     }
 
     /**
