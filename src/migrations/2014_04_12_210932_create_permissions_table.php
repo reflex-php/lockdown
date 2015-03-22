@@ -12,11 +12,6 @@ class CreatePermissionsTable extends Migration {
 	 */
 	public function up()
 	{
-		if (Schema::hasTable('lockdown_permissions')) {
-			return;
-		}
-
-		//
 		Schema::create('lockdown_permissions', function($table) {
 			$table->increments('id');
 			$table->string('name');

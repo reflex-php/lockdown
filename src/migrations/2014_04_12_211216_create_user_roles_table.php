@@ -12,23 +12,9 @@ class CreateUserRolesTable extends Migration {
 	 */
 	public function up()
 	{
-		if (Schema::hasTable('lockdown_user_roles')) {
-			return;
-		}
-
 		Schema::create('lockdown_user_roles', function($table) {
 			$table->unsignedInteger('role_id');
-
 			$table->unsignedInteger('user_id');
-
-			$table->foreign('role_id')
-				->references('id')
-				->on('lockdown_roles');
-
-			$table->foreign('user_id')
-				->references('id')
-				->on('users');
-
 			$table->timestamps();
 		});
 	}

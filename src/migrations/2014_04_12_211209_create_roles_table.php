@@ -12,10 +12,6 @@ class CreateRolesTable extends Migration {
 	 */
 	public function up()
 	{
-		if (Schema::hasTable('lockdown_roles')) {
-			return;
-		}
-
 		Schema::create('lockdown_roles', function($table) {
 			$table->increments('id');
 			$table->string('name');
