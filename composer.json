@@ -1,12 +1,17 @@
 {
     "name": "reflex/lockdown",
     "description": "PHP 5.4 ACL system",
-    "keywords": ["auth", "laravel", "acl"],
+    "keywords": ["auth", "laravel", "acl", "lockdown"],
+    "license": "MIT",
+    "homepage": "https://github.com/reflex-php/lockdown",
+    "support": {
+        "issues": "https://github.com/reflex-php/lockdown/issues",
+        "source": "https://github.com/reflex-php/lockdown"
+    },
     "authors": [
         {
             "name": "Mike Shellard",
-            "email": "me@aziri.us",
-            "role": "Head Developer"
+            "email": "mike.shellard@outlook.com"
         }
     ],
     "require": {
