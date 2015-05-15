@@ -1,10 +1,29 @@
 <?php
+/**
+ * Lockdown ACL
+ *
+ * PHP version 5.4
+ *
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 
 namespace Reflex\Lockdown\Commands;
 
-use Reflex\Lockdown\RoleNotFoundException;
-use Reflex\Lockdown\UserNotFoundException;
+use Reflex\Lockdown\Exceptions\RoleNotFound;
+use Reflex\Lockdown\Exceptions\UserNotFound;
 
+/**
+ * Remove a role from user
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 class RemoveRoleFromUser extends Command
 {
 
@@ -40,10 +59,10 @@ class RemoveRoleFromUser extends Command
         try {
             $user       =   $lockdown->findUserById($id);
             $permission =   $lockdown->findRoleByKey($permissionKey);
-        } catch (UserNotFoundException $e) {
+        } catch (UserNotFound $e) {
             $this->error('User [%(id)d] not found.', $values);
             return;
-        } catch (RoleNotFoundException $e) {
+        } catch (RoleNotFound $e) {
             $this->error('Role [%(role)s] not found', $values);
             return;
         }
@@ -51,13 +70,24 @@ class RemoveRoleFromUser extends Command
         $result =   $lockdown->removeUserRole($user, $role);
 
         if ($result) {
-            $this->info("Role [%(role)s] has been removed from the user.", $values);
+            $this->info(
+                "Role [%(role)s] has been removed from the user.",
+                $values
+            );
             return;
         }
         
-        $this->error("Permission [%(role)s] has NOT been removed from the user due to a system error.", $values);
+        $this->error(
+            "Permission [%(role)s] has NOT been removed from the user due" .
+            " to a system error.",
+            $values
+        );
     }
 
+    /**
+     * Get command line arguments
+     * @return array
+     */
     public function getArguments()
     {
         return [
@@ -65,5 +95,4 @@ class RemoveRoleFromUser extends Command
             ['criteria', InputArgument::REQUIRED, 'ID used to lookup user'],
         ];
     }
-
 }

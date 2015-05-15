@@ -1,9 +1,29 @@
 <?php
+/**
+ * Lockdown ACL
+ *
+ * PHP version 5.4
+ *
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
+
 
 namespace Reflex\Lockdown\Commands;
 
-use Reflex\Lockdown\PermissionNotFoundException;
+use Reflex\Lockdown\Exceptions\PermissionNotFound;
 
+/**
+ * Create a new permission
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 class CreatePermission extends Command
 {
 
@@ -37,15 +57,22 @@ class CreatePermission extends Command
         ];
 
         try {
-            $permissionCheck    =   $lockdown->findPermissionByKey($permissionKey);
-        } catch (PermissionNotFoundException $e) {}
+            $permissionCheck    =   $lockdown->findPermissionByKey(
+                $permissionKey
+            );
+        } catch (PermissionNotFound $e) {
+        }
 
         if (isset($permissionCheck)) {
             $this->error('Permission [%(perm)s] already exists', $values);
             return;
         }
         
-        $result         =   $lockdown->createPermission($permissionName, $permissionKey, $description);
+        $result         =   $lockdown->createPermission(
+            $permissionName,
+            $permissionKey,
+            $description
+        );
 
         if ($result) {
             $this->info("The permission [%(perm)s] has been created!", $values);
@@ -67,5 +94,4 @@ class CreatePermission extends Command
             ['description', InputArgument::OPTIONAL, 'Description'],
         ];
     }
-
 }

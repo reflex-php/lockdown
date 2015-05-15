@@ -1,10 +1,29 @@
 <?php
+/**
+ * Lockdown ACL
+ *
+ * PHP version 5.4
+ *
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 
 namespace Reflex\Lockdown\Commands;
 
-use Reflex\Lockdown\RoleNotFoundException;
+use Reflex\Lockdown\Exceptions\RoleNotFound;
 use Illuminate\Database\QueryException;
 
+/**
+ * Create a role
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 class CreateRole extends Command
 {
 
@@ -39,7 +58,8 @@ class CreateRole extends Command
 
         try {
             $roleCheck  =   $lockdown->findRoleById($roleKey);
-        } catch (RoleNotFoundException $e) {}
+        } catch (RoleNotFound $e) {
+        }
 
         if (isset($roleCheck) && $roleCheck) {
             $this->error('Role [%(role)s] already exists', $values);
@@ -47,10 +67,14 @@ class CreateRole extends Command
         }
 
         try {
-            $result =   $lockdown->createRole($roleName, $roleKey, $description);
+            $result =   $lockdown->createRole(
+                $roleName,
+                $roleKey,
+                $description
+            );
         } catch (QueryException $e) {
             $this->error(
-                "The role [%(role)s] couldn't be created due to a " . 
+                "The role [%(role)s] couldn't be created due to a " .
                 "'QueryException', please check your error log.",
                 $values
             );
@@ -58,7 +82,10 @@ class CreateRole extends Command
         }
 
         if ($result) {
-            $this->info("The role [%(role)s] (%(key)s) has been created!", $values);
+            $this->info(
+                "The role [%(role)s] (%(key)s) has been created!",
+                $values
+            );
             return;
         }
 
@@ -77,5 +104,4 @@ class CreateRole extends Command
             ['description', InputArgument::OPTIONAL, 'Description'],
         ];
     }
-
 }

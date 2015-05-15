@@ -1,67 +1,60 @@
 <?php
+/**
+ * Lockdown ACL
+ * 
+ * PHP version 5.4
+ * 
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
+
+namespace Reflex\Lockdown\Tests;
 
 use Mockery as m;
+use Faker\Factory as Faker;
+use stdClass;
 
-class LockdownTest extends PHPUnit_Framework_TestCase
+/**
+ * LockdownTest
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
+class LockdownTest extends TestCase
 {
-    public function tearDown()
-    {
-        m::close();
-    }
     
-    public function testFindRoleByKey()
-    {
-        list($cache, $user, $role, $perm)   =   $this->getMocks();
 
-        $cache->shouldReceive('get')
-            ->once()
+    public function testLockdown()
+    {
+        $roleKey    =   'admin';
+        $role       =   m::mock('Reflex\Lockdown\Roles\RoleInterface');
+        $user       =   m::mock('Reflex\Lockdown\Users\UserInterface');
+        $user->shouldReceive('has')
+            ->with($roleKey, true)
             ->andReturn(true);
 
-        $lockdown   =   m::mock(
-            'Reflex\Lockdown\Lockdown[cache]',
-            [
-                $cache,
-                $user,
-                $role,
-                $perm
-            ]
+        $userProvider       =   $this->createMockUserProvider();
+        $userProvider->shouldReceive('findById')    
+            ->with(1)
+            ->andReturn($user);
+
+        $roleProvider       =   $this->createMockRoleProvider();
+        $roleProvider->shouldReceive('findByKey')
+            ->with($roleKey)
+            ->andReturn($role);
+
+        $permissionProvider =   $this->createMockPermissionProvider();
+        $lockdown   =   new \Reflex\Lockdown\Lockdown(
+            $userProvider,
+            $roleProvider,
+            $permissionProvider
         );
 
-        $this->assertTrue($lockdown->findRoleByKey('foobar'));
-    }
-
-    public function testFindRoleByKeyFails()
-    {
-        $this->setExpectedException(
-            'Reflex\Lockdown\RoleNotFoundException',
-            "The role 'foobar' cannot be found."
-        );
-
-        list($cache, $user, $role, $perm)   =   $this->getMocks();
-
-        $cache->shouldReceive('get')
-            ->once()
-            ->andReturn(false);
-        $lockdown   =   m::mock(
-            'Reflex\Lockdown\Lockdown[cache]',
-            [
-                $cache,
-                $user,
-                $role,
-                $perm
-            ]
-        );
-
-        $lockdown->findRoleByKey('foobar');
-    }
-
-    protected function getMocks()
-    {
-        return [
-            m::mock('Reflex\Lockdown\LockdownCacheLayer'),
-            m::mock('Reflex\Lockdown\Users\ProviderInterface'),
-            m::mock('Reflex\Lockdown\Roles\ProviderInterface'),
-            m::mock('Reflex\Lockdown\Permissions\ProviderInterface'),
-        ];
+        $this->assertTrue($lockdown->has(1, $roleKey));
     }
 }

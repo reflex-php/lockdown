@@ -1,10 +1,29 @@
 <?php
+/**
+ * Lockdown ACL
+ *
+ * PHP version 5.4
+ *
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 
 namespace Reflex\Lockdown\Commands;
 
-use Reflex\Lockdown\UserNotFoundException;
-use Reflex\Lockdown\RoleNotFoundException;
+use Reflex\Lockdown\Exceptions\UserNotFound;
+use Reflex\Lockdown\Exceptions\RoleNotFound;
 
+/**
+ * Assign a role to a user
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 class AssignRoleToUser extends Command
 {
 
@@ -41,22 +60,33 @@ class AssignRoleToUser extends Command
             $user   =   $lockdown->findUserById($id);
             $role   =   $lockdown->findRoleByKey($roleKey);
             $result =   $lockdown->giveUserRole($user, $role);
-        } catch (UserNotFoundException $e) {
+        } catch (UserNotFound $e) {
             $this->error('User [%(id)d] not found.', $values);
             return;
-        } catch (RoleNotFoundException $e) {
+        } catch (RoleNotFound $e) {
             $this->error('Role [%(role)s] not found', $values);
             return;
         }
 
         if ($result) {
-            $this->info("Role [%(role)s] has been assigned to the user.", $values);
+            $this->info(
+                "Role [%(role)s] has been assigned to the user.",
+                $values
+            );
             return;
         }
 
-        $this->error("Role [%(role)s] has NOT been assigned to the user due to a system error.", $values);
+        $this->error(
+            "Role [%(role)s] has NOT been assigned to the user due to a " .
+            "system error.",
+            $values
+        );
     }
 
+    /**
+     * Get command line arguments
+     * @return array
+     */
     public function getArguments()
     {
         return [
@@ -64,5 +94,4 @@ class AssignRoleToUser extends Command
             ['id', InputArgument::REQUIRED, 'ID used to lookup user'],
         ];
     }
-
 }

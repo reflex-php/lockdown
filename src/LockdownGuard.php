@@ -1,8 +1,15 @@
 <?php
 /**
- * 
+ * Lockdown ACL
+ *
+ * PHP version 5.4
+ *
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
  */
-
 namespace Reflex\Lockdown;
 
 use Illuminate\Auth\Guard as IlluminatedGuard;
@@ -11,7 +18,12 @@ use Illuminate\Session\Store as SessionStore;
 use Illuminate\Contracts\Auth\UserProvider;
 
 /**
- * LockdownGuard which extends Auth
+ * LockdownGuard
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
  */
 class LockdownGuard extends IlluminatedGuard
 {
@@ -36,10 +48,10 @@ class LockdownGuard extends IlluminatedGuard
     /**
      * Create a new authentication guard.
      *
-     * @param  \Reflex\Lockdown\Lockdown                  $lockdown
-     * @param  \Illuminate\Contracts\Auth\UserProvider    $provider
-     * @param  \Illuminate\Session\Store                  $session
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
+     * @param  \Reflex\Lockdown\Lockdown                 $lockdown
+     * @param  \Illuminate\Contracts\Auth\UserProvider   $provider
+     * @param  \Illuminate\Session\Store                 $session
+     * @param  \Symfony\Component\HttpFoundation\Request $request
      * @return void
      */
     public function __construct(
@@ -75,7 +87,7 @@ class LockdownGuard extends IlluminatedGuard
      * Is the user a member of this role?
      * @param  string|array $role Role name
      * @param  boolean      $all  Test for all roles
-     * @return boolean       
+     * @return boolean
      */
     public function is($role, $all = true)
     {
@@ -91,7 +103,7 @@ class LockdownGuard extends IlluminatedGuard
      * Does the user have this permission?
      * @param  string|array $permission Permission name
      * @param  boolean      $all        Test for all permissions
-     * @return boolean             
+     * @return boolean
      */
     public function has($permission, $all = true)
     {
@@ -113,9 +125,9 @@ class LockdownGuard extends IlluminatedGuard
 
     /**
      * Call
-     * @param  string $method    
-     * @param  array  $arguments 
-     * @return return boolean            
+     * @param  string $method
+     * @param  array  $arguments
+     * @return return boolean
      */
     public function __call($method, array $arguments = [])
     {

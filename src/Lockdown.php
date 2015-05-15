@@ -6,7 +6,7 @@
  * @version   1.0.0
  * @author    Reflex
  * @copyright Reflex 2014
- * @link      http://aziri.us/reflex/ 
+ * @link      http://aziri.us/reflex/
  */
 
 namespace Reflex\Lockdown;
@@ -17,16 +17,15 @@ use Reflex\Lockdown\Roles\ProviderInterface as RoleProviderInterface;
 use Reflex\Lockdown\Roles\RoleInterface;
 use Reflex\Lockdown\Permissions\ProviderInterface as PermissionProviderInterface;
 use Reflex\Lockdown\Permissions\PermissionInterface;
+use Reflex\Lockdown\Exceptions\PermissionNotFound;
+use Reflex\Lockdown\Exceptions\PermissionLevelNotAllowed;
+use Reflex\Lockdown\Exceptions\UserNotFound;
+use Reflex\Lockdown\Exceptions\RoleNotFound;
 use Closure;
+use BadMethodCallException;
 
 class Lockdown
 {
-    /**
-     * Cache instance
-     * @var Reflex\Lockdown\LockdownCacheLayer
-     */
-    protected $cache;
-
     /**
      * User provider
      * @var Reflex\Lockdown\Users\ProviderInterface
@@ -53,19 +52,16 @@ class Lockdown
 
     /**
      * Constructor
-     * @param  Reflex\Lockdown\LockdownCacheLayer $cache 
-     * @param  Reflex\Lockdown\Users\ProviderInterface $user 
-     * @param  Reflex\Lockdown\Roles\ProviderInterface $role 
-     * @param  Reflex\Lockdown\Permissions\ProviderInterface $permission 
-     * @return void 
+     * @param  Reflex\Lockdown\Users\ProviderInterface       $user
+     * @param  Reflex\Lockdown\Roles\ProviderInterface       $role
+     * @param  Reflex\Lockdown\Permissions\ProviderInterface $permission
+     * @return void
      */
     public function __construct(
-        LockdownCacheLayer $cache,
         UserProviderInterface $user,
         RoleProviderInterface $role,
         PermissionProviderInterface $permission
     ) {
-        $this->cache                =   $cache;
         $this->userProvider         =   $user;
         $this->roleProvider         =   $role;
         $this->permissionProvider   =   $permission;
@@ -73,7 +69,7 @@ class Lockdown
 
     /**
      * Get allowed role permission levels
-     * @return array 
+     * @return array
      */
     public function getAllowedPermissionLevels()
     {
@@ -82,9 +78,12 @@ class Lockdown
 
     /**
      * Check permission level
-     * @param  string  $level 
-     * @return boolean        
-     * @throws PermisionLevelNotAllowedException If permission level not satisfactory
+     * @param  string $level Level to check
+     * 
+     * @return boolean
+     * 
+     * @throws \Reflex\Lockdown\Exceptions\PermisionLevelNotAllowed 
+     *         If permission level not satisfactory
      */
     public function checkPermissionLevel($level)
     {
@@ -92,76 +91,41 @@ class Lockdown
             return true;
         }
 
-        throw new PermissionLevelNotAllowedException;
-    }
-
-    /**
-     * Handle cache 
-     * @param  Closure $callback 
-     * @param  array   $miscData 
-     * @return mixed            
-     */
-    protected function cache(Closure $callback, $miscData = [])
-    {
-        if (false === is_array($miscData)) {
-            $miscData   =   (array) $miscData;
-        }
-
-        $miscData   =   $this->buildCacheMisc($miscData);
-        return $this->cache->get($callback, $miscData);
-    }
-
-    /**
-     * Build cache misc data
-     * @param  array $data 
-     * @return string       
-     */
-    protected function buildCacheMisc(array $data = [])
-    {
-        $data[] =   get_caller(get_caller());
-        return sha1(base64_encode(json_encode($data)));
+        throw new PermissionLevelNotAllowed;
     }
 
     /**
      * Get a role
-     * @param  string|Reflex\Lockdown\Roles\RoleInterface $key 
-     * @return Reflex\Lockdown\Roles\RoleInterface    
-     * @throws Reflex\Lockdown\RoleNotFoundException If Role isn't found 
+     * @param string|Reflex\Lockdown\Roles\RoleInterface $roleKey Role lookup
+     * 
+     * @return Reflex\Lockdown\Roles\RoleInterface
+     * 
+     * @throws Reflex\Lockdown\Exceptions\RoleNotFound If Role isn't found
      */
-    public function findRoleByKey($key)
+    public function findRoleByKey($roleKey)
     {
-        if ($key instanceof RoleInterface) {
-            return $key;
+        if ($roleKey instanceof RoleInterface) {
+            return $roleKey;
         }
 
-        $roleProvider   =   $this->roleProvider;
-
-        $result =   $this->cache(
-            function () use ($key, $roleProvider) {
-                return $roleProvider->findByKey($key);
-            },
-            $key
-        );
-
+        $result         =   $this->roleProvider->findByKey($roleKey);
         if ($result) {
             return $result;
         }
 
         $exceptionMessage   =   "The role '%(rolekey)s' cannot be found.";
 
-        throw new RoleNotFoundException(
-            isprintf(
-                $exceptionMessage,
-                ['rolekey' => $key]
-            )
-        );
+        throw new RoleNotFound(isprintf($exceptionMessage, compact('roleKey')));
     }
 
     /**
      * Get permission
-     * @param  string|Reflex\Lockdown\Permissions\PermissionInterface $key 
-     * @return Reflex\Lockdown\Permissions\PermissionInterface   
-     * @throws Reflex\Lockdown\PermissionNotFoundException If Permission isn't found   
+     * @param string|Reflex\Lockdown\Permissions\PermissionInterface $key
+     * 
+     * @return Reflex\Lockdown\Permissions\PermissionInterface
+     * 
+     * @throws Reflex\Lockdown\PermissionNotFoundException 
+     *         If Permission isn't found
      */
     public function findPermissionByKey($key)
     {
@@ -169,30 +133,19 @@ class Lockdown
             return $key;
         }
 
-        $result =   $this->cache(
-            function () use ($key) {
-                return $this->permissionProvider->findByKey($key);
-            },
-            $key
-        );
-
+        $result =   $this->permissionProvider->findByKey($key);
         if ($result) {
             return $result;
         }
 
-        $exceptionMessage   =   "The permission '%(permissionkey)s' cannot be found.";
+        $exceptionMessage   =   "The permission '%(key)s' cannot be found.";
 
-        throw new PermissionNotFoundException(
-            isprintf(
-                $exceptionMessage,
-                ['permissionkey' => $key]
-            )
-        );
+        throw new PermissionNotFound(isprintf($exceptionMessage, compact('key')));
     }
 
     /**
      * Find a user by their ID
-     * @param  integer|Reflex\Lockdown\Users\UserInterface $id 
+     * @param  integer|Reflex\Lockdown\Users\UserInterface $id
      * @return Reflex\Lockdown\Users\UserInterface
      * @throws Reflex\Lockdown\UserNotFoundException If User isn't found
      */
@@ -202,31 +155,19 @@ class Lockdown
             return $id;
         }
 
-        $result =   $this->cache(
-            function () use ($id) {
-                return $this->userProvider
-                    ->findById($id);
-            },
-            $id
-        );
-
+        $result =   $this->userProvider->findById($id);
         if ($result) {
             return $result;
         }
 
-        $exceptionMessage   =   "A user with the ID '%(userid)s' cannot be found.";
+        $exceptionMessage   =   "A user with the ID '%(id)s' cannot be found.";
 
-        throw new UserNotFoundException(
-            isprintf(
-                $exceptionMessage,
-                ['userid' => $id]
-            )
-        );
+        throw new UserNotFound(isprintf($exceptionMessage, compact('id')));
     }
 
     /**
      * Find a user by their login
-     * @param  string|Reflex\Lockdown\Users\UserInterface $id 
+     * @param  string|Reflex\Lockdown\Users\UserInterface $id
      * @return Reflex\Lockdown\Users\UserInterface
      * @throws UserNotFoundException If User not found
      */
@@ -236,26 +177,14 @@ class Lockdown
             return $login;
         }
 
-        $result =   $this->cache(
-            function () use ($login) {
-                return $this->userProvider
-                    ->findByLogin($login);
-            },
-            $login
-        );
-
+        $result =   $this->userProvider->findByLogin($login);
         if ($result) {
             return $result;
         }
 
-        $exceptionMessage   =   "A user with the login '%(userlogin)s' cannot be found.";
+        $exceptionMessage   =   "A user with the login '%(login)s' cannot be found.";
 
-        throw new UserNotFoundException(
-            isprintf(
-                $exceptionMessage,
-                ['userlogin' => $login]
-            )
-        );
+        throw new UserNotFound(isprintf($exceptionMessage, compact('login')));
     }
 
     /**
@@ -264,48 +193,33 @@ class Lockdown
      */
     public function findAllRoles()
     {
-        return $this->cache(
-            function () {
-                return $this->roleProvider
-                    ->findAll();
-            }
-        );
+        return $this->roleProvider->findAll();
     }
 
     /**
      * Get all permissions
-     * @return array 
+     * @return array
      */
     public function findAllPermissions()
     {
-        return $this->cache(
-            function () {
-                return $this->permissionProvider
-                    ->findAll();
-            }
-        );
+        return $this->permissionProvider->findAll();
     }
 
     /**
      * Get all users
-     * @return array 
+     * @return array
      */
     public function findAllUsers()
     {
-        return $this->cache(
-            function () {
-                return $this->userProvider
-                    ->findAll();
-            }
-        );
+        return $this->userProvider->findAll();
     }
 
     /**
      * Give a role a permission
-     * @param  Reflex\Lockdown\Roles\RoleInterface|string             $role       
-     * @param  Reflex\Lockdown\Permissions\PermissionInterface|string $permission 
-     * @param  string                                                 $level      
-     * @return boolean                       
+     * @param  Reflex\Lockdown\Roles\RoleInterface|string             $role
+     * @param  Reflex\Lockdown\Permissions\PermissionInterface|string $permission
+     * @param  string                                                 $level
+     * @return boolean
      */
     public function giveRolePermission($role, $permission, $level = 'allow')
     {
@@ -319,9 +233,9 @@ class Lockdown
 
     /**
      * Remove a permission from a role
-     * @param  Reflex\Lockdown\Roles\RoleInterface|string            $role       
-     * @param  Reflex\Lockdown\Permission\PermissionInterface|string $permission 
-     * @return boolean                       
+     * @param  Reflex\Lockdown\Roles\RoleInterface|string            $role
+     * @param  Reflex\Lockdown\Permission\PermissionInterface|string $permission
+     * @return boolean
      */
     public function removeRolePermission($role, $permission)
     {
@@ -334,9 +248,9 @@ class Lockdown
     /**
      * Give a user a permission
      * @param  Reflex\Lockdown\Users\UserInterface|string             $user
-     * @param  Reflex\Lockdown\Permissions\PermissionInterface|string $permission 
-     * @param  string                                                 $level      
-     * @return boolean                       
+     * @param  Reflex\Lockdown\Permissions\PermissionInterface|string $permission
+     * @param  string                                                 $level
+     * @return boolean
      */
     public function giveUserPermission($user, $permission, $level = 'allow')
     {
@@ -350,9 +264,9 @@ class Lockdown
 
     /**
      * Remove a permission from a user
-     * @param  Reflex\Lockdown\Users\UserInterface|string             $user       
-     * @param  Reflex\Lockdown\Permissions\PermissionInterface|string $permission 
-     * @return boolean                       
+     * @param  Reflex\Lockdown\Users\UserInterface|string             $user
+     * @param  Reflex\Lockdown\Permissions\PermissionInterface|string $permission
+     * @return boolean
      */
     public function removeUserPermission($user, $permission)
     {
@@ -364,9 +278,9 @@ class Lockdown
 
     /**
      * Give a user a role
-     * @param  Reflex\Lockdown\Users\UserInterface|string $user 
-     * @param  Reflex\Lockdown\Roles\RoleInterface|string $role 
-     * @return boolean           
+     * @param  Reflex\Lockdown\Users\UserInterface|string $user
+     * @param  Reflex\Lockdown\Roles\RoleInterface|string $role
+     * @return boolean
      */
     public function giveUserRole($user, $role)
     {
@@ -382,9 +296,9 @@ class Lockdown
 
     /**
      * Remove a role from a user
-     * @param  Reflex\Lockdown\Users\UserInterface|string $user 
-     * @param  Reflex\Lockdown\Roles\RoleInterface|string $role 
-     * @return boolean           
+     * @param  Reflex\Lockdown\Users\UserInterface|string $user
+     * @param  Reflex\Lockdown\Roles\RoleInterface|string $role
+     * @return boolean
      */
     public function removeUserRole($user, $role)
     {
@@ -400,101 +314,78 @@ class Lockdown
 
     /**
      * Create a new role
-     * @param  string  $name        
-     * @param  string  $key         
-     * @param  string  $description 
-     * @return boolean              
+     * @param  string $name
+     * @param  string $key
+     * @param  string $description
+     * @return boolean
      */
     public function createRole($name, $key = null, $description = null)
     {
-        return $this->roleProvider
-            ->create(
-            [
-                'name'          =>  $name,
-                'key'           =>  isset($key)
-                    ? $key
-                    : snake_case($name),
-                'description'   =>  isset($description)
-                    ? $description
-                    : $name,
-            ]
-        );
+        $key        =   snake_case(isset($key) ? $key : $name);
+        $description=   isset($description) ? $description : $name;
+        $values     =   compact('name', 'key', 'description');
+
+        return $this->roleProvider->create($values);
     }
 
     /**
      * Delete a role
-     * @param  string  $key 
-     * @return boolean      
+     * @param  string $key
+     * @return boolean
      */
     public function deleteRole($key)
     {
-        return $this->roleProvider
-            ->delete($key);
+        return $this->roleProvider->delete($key);
     }
 
     /**
      * Create a permission
-     * @param  string $name        
-     * @param  string $key         
-     * @param  string $description 
-     * @return boolean              
+     * @param  string $name
+     * @param  string $key
+     * @param  string $description
+     * @return boolean
      */
     public function createPermission($name, $key = null, $description = null)
     {
-        return $this->permissionProvider
-            ->create(
-            [
-                'name'          =>  $name,
-                'key'           =>  isset($key)
-                    ? $key
-                    : snake_case($name),
-                'description'   =>  isset($description)
-                    ? $description
-                    : $name,
-            ]
-        );
+        $key        =   snake_case(isset($key) ? $key : $name);
+        $description=   isset($description) ? $description : $name;
+        $values     =   compact('name', 'key', 'description');
+
+        return $this->permissionProvider->create($values);
     }
 
     /**
      * Delete a permission
-     * @param  string  $key 
-     * @return boolean      
+     * @param  string $key
+     * @return boolean
      */
     public function deletePermission($key)
     {
-        return $this->permissionProvider
-            ->delete($key);
+        return $this->permissionProvider->delete($key);
     }
 
     /**
      * Does the user have a permission?
-     * @param  integer $id         
-     * @param  string  $permission 
-     * @param  boolean $all        
-     * @return boolean             
+     * @param  integer $id
+     * @param  string  $permission
+     * @param  boolean $all
+     * @return boolean
      */
     public function has($id, $permission, $all = true)
     {
-        if (! $user   =   $this->findUserById($id)) {
+        if (! $user = $this->findUserById($id)) {
             return false;
         }
 
-        $arguments  =   func_get_args();
-
-        return $this->cache(
-            function () use ($user, $permission, $all) {
-                return $user->has($permission, $all);
-            },
-            $arguments
-        );
-    }
+        return $user->has($permission, $all);
+}
 
     /**
      * Does the user not have a permission
-     * @param  integer $id         
-     * @param  string  $permission 
-     * @param  boolean $all        
-     * @return boolean              
+     * @param  integer $id
+     * @param  string  $permission
+     * @param  boolean $all
+     * @return boolean
      */
     public function hasnt($id, $permission, $all = true)
     {
@@ -503,34 +394,26 @@ class Lockdown
 
     /**
      * Is the user part of a role?
-     * @param  integer $id   
-     * @param  string  $role 
-     * @param  boolean $all  
-     * @return boolean       
+     * @param  integer $id
+     * @param  string  $role
+     * @param  boolean $all
+     * @return boolean
      */
     public function is($id, $role, $all = true)
     {
-        $user   =   $this->findUserById($id);
-        if (! $user) {
+        if (! $user = $this->findUserById($id)) {
             return false;
         }
 
-        $arguments  =   func_get_args();
-
-        return $this->cache(
-            function () use ($user, $role, $all) {
-                return $user->is($role, $all);
-            },
-            $arguments
-        );
+        return $user->is($role, $all);
     }
 
     /**
      * Is the user not part of a role?
-     * @param  integer $id   
-     * @param  string  $role 
-     * @param  boolean $all  
-     * @return boolean        
+     * @param  integer $id
+     * @param  string  $role
+     * @param  boolean $all
+     * @return boolean
      */
     public function not($id, $role, $all = true)
     {
@@ -539,9 +422,9 @@ class Lockdown
 
     /**
      * Dynamically segment a string for a nice elegent role/permission look up
-     * @param  string  $finder 
-     * @param  boolean $all    
-     * @return array         
+     * @param  string  $finder
+     * @param  boolean $all
+     * @return array
      */
     protected function dynamicSegmenter($finder, $all)
     {
@@ -555,62 +438,61 @@ class Lockdown
             -1,
             PREG_SPLIT_DELIM_CAPTURE
         );
-        $return     =   [];
 
-        foreach ($segments as $segment) {
-            if ($segment !== $splitOn) {
-                $return[]   =   snake_case($segment);
-            }
-        }
+        $segments   =   array_where($segments, function ($key, $segment) {
+            return $segment !== $splitOn;
+        });
 
-        return $return;
+        $segments   =   array_map('str_slug', $segments, ['_']);
+
+        // foreach ($segments as $segment) {
+        //     if ($segment !== $splitOn) {
+        //         $return[]   =   snake_case($segment);
+        //     }
+        // }
+
+        return $segments;
     }
 
     /**
      * Build a dynamic permission/role lookup
-     * @param  string  $method 
-     * @param  integer $id     
-     * @return boolean|null         
+     * @param  string  $method
+     * @param  integer $id
+     * @return boolean|null
      */
     protected function dynamicBuilder($method, $id)
     {
+        $all    =   true;
+        if (starts_with($method, 'is')) {
+            $prefixLength   =   2;
+            $call           =   'is';
+        } elseif (starts_with($method, 'has')) {
+            $prefixLength   =   3;
+            $call           =   'has';
+        } else {
+            return null;
+        }
 
-        return $this->cache(
-            function () use ($method, $id) {
-                $all    =   true;
-                if (starts_with($method, 'is')) {
-                    $prefixLength   =   2;
-                    $call           =   'is';
-                } elseif (starts_with($method, 'has')) {
-                    $prefixLength   =   3;
-                    $call           =   'has';
-                } else {
-                    return null;
-                }
+        $finder =   substr($method, $prefixLength);
 
-                $finder =   substr($method, $prefixLength);
+        // Allows us to specify any or all
+        if (starts_with($finder, 'OneOf')) {
+            $all    =   false;
+            $finder =   substr($finder, 5);
+        }
 
-                // Allows us to specify any or all
-                if (starts_with($finder, 'OneOf')) {
-                    $all    =   false;
-                    $finder =   substr($finder, 5);
-                }
-
-                // SEGMENT!
-                $lookupArray    =   $this->dynamicSegmenter($finder, $all);
-                    
-                // Call the lookup!
-                return $this->$call($id, $lookupArray, $all);
-            },
-            func_get_args()
-        );
+        // SEGMENT!
+        $lookupArray    =   $this->dynamicSegmenter($finder, $all);
+            
+        // Call the lookup!
+        return $this->$call($id, $lookupArray, $all);
     }
 
     /**
      * __call
-     * @param  string  $method    
-     * @param  array   $arguments 
-     * @return boolean            
+     * @param  string $method
+     * @param  array  $arguments
+     * @return boolean
      * @throws \BadMethodCallException If method not found
      */
     public function __call($method, array $arguments = [])
@@ -630,7 +512,7 @@ class Lockdown
 
         $className  =   get_class($lockdown);
 
-        throw new \BadMethodCallException(
+        throw new BadMethodCallException(
             "Call to undefined method {$className}::{$method}()"
         );
     }

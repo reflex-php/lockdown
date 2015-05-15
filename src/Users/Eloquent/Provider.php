@@ -14,8 +14,8 @@ class Provider implements ProviderInterface
 
     /**
      * Constructor
-     * @param string $model 
-     * @return void 
+     * @param string $model
+     * @return void
      */
     public function __construct($model = null)
     {
@@ -24,7 +24,7 @@ class Provider implements ProviderInterface
 
     /**
      * Create instance of the model
-     * @return Reflex\Lockdown\Roles\UserInterface 
+     * @return Reflex\Lockdown\Roles\UserInterface
      */
     protected function createModelInstance()
     {
@@ -33,8 +33,8 @@ class Provider implements ProviderInterface
 
     /**
      * Find role by ID
-     * @param  integer $id        
-     * @return Reflex\Lockdown\Roles\UserInterface     
+     * @param  integer $id
+     * @return Reflex\Lockdown\Roles\UserInterface
      */
     public function findById($id)
     {
@@ -44,22 +44,22 @@ class Provider implements ProviderInterface
 
     /**
      * Find user by login
-     * @param  string $login 
-     * @return Reflex\Lockdown\Users\UserInterface        
+     * @param  string $login
+     * @return Reflex\Lockdown\Users\UserInterface
      */
     public function findByLogin($login)
     {
         $model  =   $this->createModelInstance();
         return $model->where(
-                $model->getLoginAttribute(),
-                $login
-            )
+            $model->getLoginAttribute(),
+            $login
+        )
             ->first();
     }
 
     /**
      * Get all users
-     * @return array 
+     * @return array
      */
     public function findAll()
     {
@@ -69,8 +69,8 @@ class Provider implements ProviderInterface
 
     /**
      * Find users with permission
-     * @param  string|Reflex\Lockdown\Permissions\PermissionInterface $permission 
-     * @return array             
+     * @param  string|Reflex\Lockdown\Permissions\PermissionInterface $permission
+     * @return array
      */
     public function findWithPermission($permission)
     {
@@ -84,8 +84,8 @@ class Provider implements ProviderInterface
 
     /**
      * Find users without permission
-     * @param  string|Reflex\Lockdown\Permissions\PermissionInterface $permission 
-     * @return array             
+     * @param  string|Reflex\Lockdown\Permissions\PermissionInterface $permission
+     * @return array
      */
     public function findWithoutPermission($permission)
     {
@@ -99,8 +99,8 @@ class Provider implements ProviderInterface
 
     /**
      * Find users in role
-     * @param  Reflex\Lockdown\Roles\RoleInterface $role 
-     * @return array              
+     * @param  Reflex\Lockdown\Roles\RoleInterface $role
+     * @return array
      */
     public function findInRole(RoleInterface $role)
     {
@@ -110,8 +110,8 @@ class Provider implements ProviderInterface
 
     /**
      * Find users not in role
-     * @param  Reflex\Lockdown\Roles\RoleInterface $role 
-     * @return array              
+     * @param  Reflex\Lockdown\Roles\RoleInterface $role
+     * @return array
      */
     public function findNotInRole(RoleInterface $role)
     {

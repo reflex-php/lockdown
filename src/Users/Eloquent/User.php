@@ -1,7 +1,6 @@
 <?php
 namespace Reflex\Lockdown\Users\Eloquent;
 
-
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Reflex\Lockdown\Permissions\PermissionInterface;
@@ -14,7 +13,7 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 /**
  * User Model
  */
-class User extends Model implements 
+class User extends Model implements
     UserInterface,
     AuthenticatableContract,
     CanResetPasswordContract
@@ -35,8 +34,8 @@ class User extends Model implements
 
     /**
      * Login attribute mutator
-     * @param string $attribute 
-     * @return void 
+     * @param string $attribute
+     * @return void
      */
     public function setLoginAttribute($attribute)
     {
@@ -45,7 +44,7 @@ class User extends Model implements
 
     /**
      * Login attribute mutator
-     * @return string 
+     * @return string
      */
     public function getLoginAttribute()
     {
@@ -84,7 +83,7 @@ class User extends Model implements
 
     /**
      * Remember token mutator
-     * @return string 
+     * @return string
      */
     public function getRememberToken()
     {
@@ -94,7 +93,7 @@ class User extends Model implements
     /**
      * Remember token mutator
      * @param string $value
-     * @return void 
+     * @return void
      */
     public function setRememberToken($value)
     {
@@ -103,7 +102,7 @@ class User extends Model implements
 
     /**
      * Remember token name mutator
-     * @return string 
+     * @return string
      */
     public function getRememberTokenName()
     {
@@ -112,7 +111,7 @@ class User extends Model implements
 
     /**
      * Retrieve all users roles
-     * @return Illuminate\Database\Eloquent\Relations\BelongsToMany 
+     * @return Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function roles()
     {
@@ -126,7 +125,7 @@ class User extends Model implements
 
     /**
      * Retrieve all users permissions
-     * @return Illuminate\Database\Eloquent\Relations\BelongsToMany 
+     * @return Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function permissions()
     {
@@ -137,11 +136,16 @@ class User extends Model implements
         )->withPivot('level');
     }
 
+    protected function roleFilter($key, $role)
+    {
+        // code...
+    }
+
     /**
      * Is the user in the role(s)?
-     * @param  string|array  $roles 
-     * @param  boolean       $all   
-     * @return boolean        
+     * @param  string|array $roles
+     * @param  boolean      $all
+     * @return boolean
      */
     public function is($roles, $all = true)
     {
@@ -171,18 +175,39 @@ class User extends Model implements
     /**
      * Is the user not in the roles?
      * @param  string|array $roles Role name to lookup
-     * @param  boolean      $all   
-     * @return boolean       
+     * @param  boolean      $all
+     * @return boolean
      */
     public function not($roles, $all = true)
     {
         return false === $this->is($roles, $all);
     }
 
+    protected function permissionFilter($key, $permission)
+    {
+        if (true === $this->getLocalCacheValue($permission)) {
+            return true;
+        }
+
+        $permissionLookup   =   $this->getPermission($permission);
+        $allowed            =   false;
+
+        if (isset($permissionLookup)) {
+            $allowed    =   $permissionLookup->isDenied()
+                ? false : $permissionLookup->isAllowed();
+        } elseif ($this->roles->has($permission)) {
+            $allowed        =   true;
+        }
+
+        $this->addToLocalCache($permission, $allowed);
+
+        return $allowed;
+    }
+
     /**
      * Does the user have the permission?
      * @param  string|array $permissions Permission to lookup
-     * @return boolean             
+     * @return boolean
      */
     public function has($permissions, $all = true)
     {
@@ -194,32 +219,7 @@ class User extends Model implements
         $filtered   =   [];
         $usersRoles =   $this->roles;
         $allowed    =   false;
-        $filtered   =   array_where(
-            $permissions,
-            function($key, $permission) {
-                if (true === $this->getLocalCacheValue($permission)) {
-                    return true;
-                }
-
-                $permissionLookup   =   $this->getPermission($permission);
-                $allowed            =   false;
-
-                if (isset($permissionLookup)) {
-                    if ($permissionLookup->isDenied()) {
-                        $allowed    =   false;
-                    } else {
-                        $allowed    =   $permissionLookup->isAllowed();
-                    }
-                } elseif ($this->roles->has($permission)) {
-                    $allowed        =   true;
-                }
-
-                $this->addToLocalCache($permission, $allowed);
-
-                return $allowed;
-            }
-        );
-
+        $filtered   =   array_where($permissions, [$this, 'permissionFilter']);
         $filteredCount  =   count($filtered);
 
         // Does the permission lookup require all permissions to be found?
@@ -234,7 +234,7 @@ class User extends Model implements
     /**
      * Does the user not have the permission?
      * @param  string|array $permissions Permissions to lookup
-     * @return boolean             
+     * @return boolean
      */
     public function hasnt($permissions, $all = true)
     {
@@ -244,10 +244,10 @@ class User extends Model implements
     /**
      * Get the actual permission and level assigned to the user
      * @param  string|PermissionInterface $permission Permission name/key
-     * @return Model|Builder|null             
+     * @return Model|Builder|null
      */
     public function getPermission($permission)
-    {        
+    {
         if ($permission instanceof PermissionInterface) {
             $permission =   $permission->key;
         }
@@ -259,12 +259,12 @@ class User extends Model implements
 
     /**
      * Give a permission to the user
-     * @param  PermissionInterface $permission 
-     * @param  string              $level      
-     * @return boolean                          
+     * @param  PermissionInterface $permission
+     * @param  string              $level
+     * @return boolean
      */
     public function give(PermissionInterface $permission, $level = 'allow')
-    {   
+    {
         $current    =   $this->getPermission($permission->key);
         if (isset($current)) {
             if ($current->level === $level) {
@@ -275,19 +275,15 @@ class User extends Model implements
 
         $this->removeFromLocalCache($permission->key);
 
-        $this->permissions()
-            ->attach(
-                $permission,
-                ['level' => $level]
-            );
+        $this->permissions()->attach($permission, compact('level'));
 
         return false === is_null($this->getPermission($permission));
     }
 
     /**
      * Remove a permission from the user
-     * @param  PermissionInterface $permission 
-     * @return boolean                          
+     * @param  PermissionInterface $permission
+     * @return boolean
      */
     public function remove(PermissionInterface $permission)
     {
@@ -303,8 +299,8 @@ class User extends Model implements
 
     /**
      * Join a role
-     * @param  RoleInterface $role 
-     * @return boolean              
+     * @param  RoleInterface $role
+     * @return boolean
      */
     public function join(RoleInterface $role)
     {
@@ -316,8 +312,8 @@ class User extends Model implements
 
     /**
      * Leave a role
-     * @param  RoleInterface $role 
-     * @return boolean              
+     * @param  RoleInterface $role
+     * @return boolean
      */
     public function leave(RoleInterface $role)
     {
@@ -325,7 +321,7 @@ class User extends Model implements
             ->detach($role);
 
         return $this->isnt($role);
-    }    
+    }
 
     /**
      * Delete user and associated information
@@ -343,8 +339,8 @@ class User extends Model implements
 
     /**
      * Remove item from local cache array
-     * @param  string  $key 
-     * @return boolean      
+     * @param  string $key
+     * @return boolean
      */
     protected function removeFromLocalCache($key)
     {
@@ -355,9 +351,9 @@ class User extends Model implements
 
     /**
      * Add a value to local cache array
-     * @param  string $key   
-     * @param  mixed  $value 
-     * @return boolean 
+     * @param  string $key
+     * @param  mixed  $value
+     * @return boolean
      */
     protected function addToLocalCache($key, $value)
     {
@@ -368,12 +364,11 @@ class User extends Model implements
 
     /**
      * Get a value from locacl cache array
-     * @param  string $key 
-     * @return mixed      
+     * @param  string $key
+     * @return mixed
      */
     protected function getLocalCacheValue($key)
     {
         return array_get($this->cache, $key, null);
     }
-
 }

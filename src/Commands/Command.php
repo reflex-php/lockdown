@@ -1,4 +1,15 @@
 <?php
+/**
+ * Lockdown ACL
+ *
+ * PHP version 5.4
+ *
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 
 namespace Reflex\Lockdown\Commands;
 
@@ -7,10 +18,26 @@ use Reflex\Lockdown\Models;
 use Reflex\Lockdown\Lockdown;
 use App;
 
+/**
+ * Command
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 abstract class Command extends LaravelCommand
 {
+    /**
+     * Lockdown instance
+     * @var \Reflex\Lockdown\Lockdown
+     */
     protected $lockdown;
 
+    /**
+     * Constructor
+     * @param \Reflex\Lockdown\Lockdown $lockdown Lockdown instance
+     */
     public function __construct(Lockdown $lockdown)
     {
         $this->lockdown =   $lockdown;
@@ -20,11 +47,11 @@ abstract class Command extends LaravelCommand
 
     /**
      * Interpolate message
-     * @param  string $message String to interpolate
-     * @param  array  $args    Array of values to interpolate
-     * @return string          
+     * @param string $message String to interpolate
+     * @param array  $args    Array of values to interpolate
+     * @return string
      */
-    protected function interpolate($message, array $args)
+    protected function interpolate($message, array $args = [])
     {
         return isprintf($message, $args);
     }
@@ -32,9 +59,10 @@ abstract class Command extends LaravelCommand
     /**
      * Write a string as comment output.
      *
-     * @param  string  $string String to output
-     * @param  array   $args   Array of values to interpolate
-     * @return void
+     * @param string $string String to output
+     * @param array  $args   Array of values to interpolate
+     *
+     * @return null
      */
     public function comment($string, array $args = [])
     {
@@ -45,9 +73,10 @@ abstract class Command extends LaravelCommand
     /**
      * Write a string as information output.
      *
-     * @param  string  $string String to output
-     * @param  array   $args   Array of values to interpolate
-     * @return void
+     * @param string $string String to output
+     * @param array  $args   Array of values to interpolate
+     *
+     * @return null
      */
     public function info($string, array $args = [])
     {
@@ -58,9 +87,10 @@ abstract class Command extends LaravelCommand
     /**
      * Write a string as question output.
      *
-     * @param  string  $string String to output
-     * @param  array   $args   Array of values to interpolate
-     * @return void
+     * @param string $string String to output
+     * @param array  $args   Array of values to interpolate
+     *
+     * @return null
      */
     public function question($string, array $args = [])
     {
@@ -71,9 +101,10 @@ abstract class Command extends LaravelCommand
     /**
      * Write a string as error output.
      *
-     * @param  string  $string String to output
-     * @param  array   $args   Array of values to interpolate
-     * @return void
+     * @param string $string String to output
+     * @param array  $args   Array of values to interpolate
+     *
+     * @return null
      */
     public function error($string, array $args = [])
     {
@@ -84,11 +115,12 @@ abstract class Command extends LaravelCommand
     /**
      * Confirm a question with the user.
      *
-     * @param  string  $question
-     * @param  bool    $default
-     * @param  array   $args 
+     * @param string $string  Question to ask user
+     * @param bool   $default Default response
+     * @param array  $args    Array of values to interpolate
+     *
      * @return bool
-     */    
+     */
     public function confirm($string, $default = true, array $args = [])
     {
         $message    =   $this->interpolate($string, $args);
@@ -98,10 +130,11 @@ abstract class Command extends LaravelCommand
     /**
      * Prompt the user for input.
      *
-     * @param  string  $string  String to output
-     * @param  mixed   $default Default value
-     * @param  array   $args    Array of values to interpolate
-     * @return void
+     * @param string $question Question to ask
+     * @param mixed  $default  Default value
+     * @param array  $args     Array of values to interpolate
+     *
+     * @return null
      */
     public function ask($question, $default = null, array $args = [])
     {
@@ -112,10 +145,11 @@ abstract class Command extends LaravelCommand
     /**
      * Prompt the user for input.
      *
-     * @param  string  $string   String to output
-     * @param  boolean $fallback Fallback value
-     * @param  array   $args     Array of values to interpolate
-     * @return void
+     * @param string  $question Question to ask
+     * @param boolean $fallback Fallback value
+     * @param array   $args     Array of values to interpolate
+     *
+     * @return null
      */
     public function secret($question, $fallback = true, array $args = [])
     {

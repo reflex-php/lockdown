@@ -1,10 +1,30 @@
 <?php
+/**
+ * Lockdown ACL
+ *
+ * PHP version 5.4
+ *
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
+
 namespace Reflex\Lockdown\Permissions\Eloquent;
 
 use Reflex\Lockdown\Permissions\PermissionInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 
+/**
+ * Permission
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 class Permission extends Model implements PermissionInterface
 {
     /**
@@ -20,8 +40,8 @@ class Permission extends Model implements PermissionInterface
     protected $fillable =   ['name', 'key', 'description'];
 
     /**
-     * Get users
-     * @return Illuminate\Database\Eloquent\Relations\BelongsToMany 
+     * Get users that have this permission
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
     public function users()
     {
@@ -33,8 +53,8 @@ class Permission extends Model implements PermissionInterface
     }
 
     /**
-     * Get roles
-     * @return Illuminate\Database\Eloquent\Relations\BelongsToMany 
+     * Get roles with this permission
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
     public function roles()
     {
@@ -47,7 +67,7 @@ class Permission extends Model implements PermissionInterface
 
     /**
      * Get the pivot level attribute
-     * @return string 
+     * @return string
      */
     public function getLevelAttribute()
     {
@@ -55,8 +75,8 @@ class Permission extends Model implements PermissionInterface
     }
 
     /**
-     * Is the permission allowed
-     * @return boolean 
+     * Is this permission allowed?
+     * @return boolean
      */
     public function isAllowed()
     {
@@ -64,8 +84,8 @@ class Permission extends Model implements PermissionInterface
     }
 
     /**
-     * Is the permission denied
-     * @return boolean 
+     * Is this permission explicitly denied?
+     * @return boolean
      */
     public function isDenied()
     {
@@ -74,8 +94,8 @@ class Permission extends Model implements PermissionInterface
 
     /**
      * Look up by key
-     * @param  Illuminate\Database\Query\Builder $query
-     * @param  mixed                             $key   
+     * @param Illuminate\Database\Query\Builder $query Query building
+     * @param string                            $key   Lookup key
      * @return Illuminate\Database\Query\Builder
      */
     public function scopeKey(Illuminate\Database\Query\Builder $query, $key)
@@ -84,8 +104,8 @@ class Permission extends Model implements PermissionInterface
     }
 
     /**
-     * Delete permission and associated data
-     * @return boolean 
+     * Delete permission
+     * @return boolean
      */
     public function delete()
     {

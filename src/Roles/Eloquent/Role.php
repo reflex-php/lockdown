@@ -1,18 +1,57 @@
 <?php
+/**
+ * Lockdown ACL
+ *
+ * PHP version 5.4
+ *
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
+
 namespace Reflex\Lockdown\Roles\Eloquent;
 
 use Reflex\Lockdown\Permissions\PermissionInterface;
 use Reflex\Lockdown\Roles\RoleInterface;
+use Reflex\Lockdown\Roles\RoleTraits;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Role model
+ * @category Package
+ * @package  Reflex
+ * @author   Mike Shellard <contact@mikeshellard.me>
+ * @license  http://mikeshellard.me/reflex/license MIT
+ * @link     http://mikeshellard.me/reflex/lockdown
+ */
 class Role extends Model implements RoleInterface
 {
+    use RoleTraits;
+    
+    /**
+     * Table name
+     * @var string
+     */
     protected $table    =   'lockdown_roles';
 
+    /**
+     * Fillable values
+     * @var array
+     */
     protected $fillable =   ['name', 'key', 'description'];
 
+    /**
+     * Local cache
+     * @var array
+     */
     protected $cache    =   [];
 
+    /**
+     * Get users in this role
+     * @return mixed
+     */
     public function users()
     {
         return $this->belongsToMany(
@@ -23,6 +62,10 @@ class Role extends Model implements RoleInterface
         )->withTimestamps();
     }
 
+    /**
+     * Get permission in this role
+     * @return mixed
+     */
     public function permissions()
     {
         return $this->morphToMany(
@@ -35,7 +78,7 @@ class Role extends Model implements RoleInterface
     /**
      * Get the actual permission
      * @param  string $permission Permission name/key
-     * @return Model|Builder|null             
+     * @return Model|Builder|null
      */
     public function getPermission($permission)
     {
@@ -48,47 +91,16 @@ class Role extends Model implements RoleInterface
             ->first();
     }
 
-    public function has($permissions, $all = true)
-    {
-        if (! is_array($permissions)) {
-            $permissions    =   (array) $permissions;
-        }
-
-        $permissions=   array_unique($permissions);
-        $cache      =   &$this->cache;
-        $filtered   =   array_where(
-            $permissions,
-            function ($permission) use ($cache) {
-                if (array_key_exists($permission, $cache) && true === $cache[ $permission ]) {
-                    return true;
-                }
-
-                if ($permissionResult = $this->getPermission($permission)) {
-                    if ($permissionResult->isDenied()) {
-                        return $cache[ $permission ]   =   false;
-                    }
-
-                    return $cache[ $permission ]   =   $permissionResult->isAllowed();
-                }
-
-                return $cache[ $permission ]    =   false;
-            }
-        );
-
-        if (true === $all) {
-            return count($permissions) === count($filtered);
-        }
-
-        return 0 < count($filtered);
-    }
-
-    public function hasnt($has, $all = true)
-    {
-        return false === $this->has($has, $all);
-    }
-
+    /**
+     * Give role a permission
+     * @param  \Reflex\Lockdown\Permissions\PermissionInterface $permission
+     *         Permission instance
+     * @param  string                                           $level
+     *         Level
+     * @return boolean
+     */
     public function give(PermissionInterface $permission, $level = 'allow')
-    {   
+    {
         $current    =   $this->getPermission($permission->key);
         if (isset($current)) {
             if ($current->level === $level) {
@@ -104,6 +116,12 @@ class Role extends Model implements RoleInterface
         return ! is_null($this->getPermission($permission));
     }
 
+    /**
+     * Remove a permission from this role
+     * @param  \Reflex\Lockdown\Permisssions\PermissionInterface $permission
+     *         Permission instance
+     * @return boolean
+     */
     public function remove(PermissionInterface $permission)
     {
         unset($this->cache[ $permission->key ]);
@@ -116,6 +134,10 @@ class Role extends Model implements RoleInterface
         return true;
     }
 
+    /**
+     * Delete this role
+     * @return boolean
+     */
     public function delete()
     {
         $this->users()->detach();
