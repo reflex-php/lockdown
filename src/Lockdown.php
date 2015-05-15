@@ -439,9 +439,12 @@ class Lockdown
             PREG_SPLIT_DELIM_CAPTURE
         );
 
-        $segments   =   array_where($segments, function ($key, $segment) {
-            return $segment !== $splitOn;
-        });
+        $segments   =   array_where(
+            $segments, 
+            function ($key, $segment) use ($splitOn) {
+                return $segment !== $splitOn;
+            }
+        );
 
         $segments   =   array_map('str_slug', $segments, ['_']);
 
