@@ -43,12 +43,6 @@ class Role extends Model implements RoleInterface
     protected $fillable =   ['name', 'key', 'description'];
 
     /**
-     * Local cache
-     * @var array
-     */
-    protected $cache    =   [];
-
-    /**
      * Get users in this role
      * @return mixed
      */
@@ -108,10 +102,9 @@ class Role extends Model implements RoleInterface
             }
             $this->remove($permission);
         }
-
-        unset($this->cache[ $permission->key ]);
+        $this->cache($permission->key, null);
         $this->permissions()
-            ->attach($permission, ['level' => $level]);
+            ->attach($permission, compact('level'));
 
         return ! is_null($this->getPermission($permission));
     }
@@ -124,7 +117,7 @@ class Role extends Model implements RoleInterface
      */
     public function remove(PermissionInterface $permission)
     {
-        unset($this->cache[ $permission->key ]);
+        $this->cache($permission->key, null);
 
         if (! is_null($this->getPermission($permission))) {
             $this->permissions()
