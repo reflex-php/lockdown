@@ -179,7 +179,7 @@ class LockdownServiceProvider extends ServiceProvider
     {
         $this->app['lockdown.user']    =    $this->app->share(
             function ($app) {
-                $userModel    =    config'lockdown.user');
+                $userModel    =    config('lockdown.user');
                 return new UserProvider($userModel);
             }
         );
