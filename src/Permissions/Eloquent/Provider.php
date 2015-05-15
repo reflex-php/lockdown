@@ -141,7 +141,8 @@ class Provider implements ProviderInterface
     {
         $callback   =   function ($permission) use ($role) {
             return $role->hasnt($permission->key);
-        }
+        };
+        
         return array_filter($this->findAll(), $callback);
     }
 }
