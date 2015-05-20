@@ -72,23 +72,18 @@ class LockdownServiceProvider extends ServiceProvider
      */
     protected function registerLockdownConfiguration()
     {
-        // Are we running an old or legacy version of Laravel?
-        if ($this->isLegacyLaravel() || $this->isOldLaravel()) {
-            $this->package('reflex/lockdown', 'lockdown', __DIR__ . '/app');
-        } else {
-            $this->publishes(
-                [
-                    __DIR__ . $this->modelsConfigPath    =>
-                        config_path('lockdown.php'),
-                ],
-                'config'
-            );
+        $this->publishes(
+            [
+                __DIR__ . $this->modelsConfigPath    =>
+                    config_path('lockdown.php'),
+            ],
+            'config'
+        );
 
-            $this->mergeConfigFrom(
-                __DIR__ . $this->modelsConfigPath,
-                'lockdown'
-            );
-        }
+        $this->mergeConfigFrom(
+            __DIR__ . $this->modelsConfigPath,
+            'lockdown'
+        );
     }
 
     /**
@@ -274,23 +269,5 @@ class LockdownServiceProvider extends ServiceProvider
             'lockdown.role',
             'lockdown.user',
         ];
-    }
-
-    /**
-     * Is the application running a legacy version of Laravel?
-     * @return boolean
-     */
-    public function isLegacyLaravel()
-    {
-        return Str::startsWith(Application::VERSION, array('4.1.', '4.2.'));
-    }
-
-    /**
-     * Is the application running an old version of Laravel?
-     * @return boolean
-     */
-    public function isOldLaravel()
-    {
-        return Str::startsWith(Application::VERSION, '4.0.');
     }
 }
