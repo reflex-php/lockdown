@@ -11,7 +11,7 @@
     "authors": [
         {
             "name": "Mike Shellard",
-            "email": "mike.shellard@outlook.com"
+            "email": "contact@mikeshellard.me"
         }
     ],
     "require": {
@@ -34,7 +34,7 @@
             "Reflex\\Lockdown\\": "src/"
         },
         "files":    [
-            "src/helpers.php"
+            "src/Reflex/Lockdown/helpers.php"
         ]
     },
     "autoload-dev": {
