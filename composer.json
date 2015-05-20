@@ -31,7 +31,7 @@
             "src/Reflex/Lockdown/migrations"
         ],
         "psr-4":    {
-            "Reflex\\Lockdown\\": "src/"
+            "Reflex\\Lockdown\\": "src/Reflex/Lockdown/"
         },
         "files":    [
             "src/Reflex/Lockdown/helpers.php"
