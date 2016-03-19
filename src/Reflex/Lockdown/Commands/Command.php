@@ -2,8 +2,6 @@
 /**
  * Lockdown ACL
  *
- * PHP version 5.4
- *
  * @category Package
  * @package  Reflex
  * @author   Mike Shellard <contact@mikeshellard.me>
@@ -64,7 +62,7 @@ abstract class Command extends LaravelCommand
      *
      * @return null
      */
-    public function comment($string, array $args = [])
+    public function comment($string, $verbosity = null, array $args = [])
     {
         $message    =   $this->interpolate($string, $args);
         parent::comment($message);
@@ -78,7 +76,7 @@ abstract class Command extends LaravelCommand
      *
      * @return null
      */
-    public function info($string, array $args = [])
+    public function info($string, $verbosity = NULL, array $args = [])
     {
         $message    =   $this->interpolate($string, $args);
         parent::info($message);
@@ -92,7 +90,7 @@ abstract class Command extends LaravelCommand
      *
      * @return null
      */
-    public function question($string, array $args = [])
+    public function question($string, $verbosity = null, array $args = [])
     {
         $message    =   $this->interpolate($string, $args);
         parent::question($message);
@@ -106,7 +104,7 @@ abstract class Command extends LaravelCommand
      *
      * @return null
      */
-    public function error($string, array $args = [])
+    public function error($string, $verbosity = null, array $args = [])
     {
         $message    =   $this->interpolate($string, $args);
         parent::error($message);
@@ -121,7 +119,7 @@ abstract class Command extends LaravelCommand
      *
      * @return bool
      */
-    public function confirm($string, $default = true, array $args = [])
+    public function confirm($string, $verbosity = null, $default = true, array $args = [])
     {
         $message    =   $this->interpolate($string, $args);
         return parent::confirm($message, $default);
@@ -136,7 +134,7 @@ abstract class Command extends LaravelCommand
      *
      * @return null
      */
-    public function ask($question, $default = null, array $args = [])
+    public function ask($question, $verbosity = null, $default = null, array $args = [])
     {
         $message    =   $this->interpolate($question, $args);
         return parent::ask($message, $default);
