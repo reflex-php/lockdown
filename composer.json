@@ -1,6 +1,6 @@
 {
     "name": "reflex/lockdown",
-    "description": "PHP 5.5 ACL system",
+    "description": "ACL system",
     "keywords": ["auth", "laravel", "acl", "lockdown"],
     "license": "MIT",
     "homepage": "https://github.com/reflex-php/lockdown",
