@@ -2,8 +2,6 @@
 /**
  * Lockdown ACL
  *
- * PHP version 5.4
- *
  * @category Package
  * @package  Reflex
  * @author   Mike Shellard <contact@mikeshellard.me>
@@ -13,11 +11,11 @@
 
 return [
     // User model
-    'user'      =>  'Reflex\Lockdown\Users\Eloquent\User',
+    'user'      =>  Reflex\Lockdown\Users\Eloquent\User::class,
 
     // Role model
-    'role'      =>  'Reflex\Lockdown\Roles\Eloquent\Role',
+    'role'      =>  Reflex\Lockdown\Roles\Eloquent\Role::class,
 
     // Permission model
-    'permission'=>  'Reflex\Lockdown\Permissions\Eloquent\Permission',
+    'permission'=>  Reflex\Lockdown\Permissions\Eloquent\Permission::class,
 ];

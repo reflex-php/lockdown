@@ -54,6 +54,11 @@ class LockdownServiceProvider extends ServiceProvider
         $this->registerCommands();
     }
 
+    /**
+     * Register Lockdown migrations
+     * 
+     * @return void
+     */
     protected function registerLockdownMigrations()
     {
         if (method_exists($this, 'publishes')) {
@@ -68,6 +73,7 @@ class LockdownServiceProvider extends ServiceProvider
 
     /**
      * Register Lockdown configuration
+     * 
      * @return void
      */
     protected function registerLockdownConfiguration()
@@ -88,6 +94,7 @@ class LockdownServiceProvider extends ServiceProvider
 
     /**
      * Register Lockdown
+     * 
      * @return void
      */
     protected function registerLockdownGuard()
@@ -160,7 +167,7 @@ class LockdownServiceProvider extends ServiceProvider
     {
         $this->app['auth']->extend(
             'lockdown',
-            function ($app) {
+            function ($app, $name, array $config) {
                 return $app['lockdown.guard'];
             }
         );
@@ -172,10 +179,17 @@ class LockdownServiceProvider extends ServiceProvider
      */
     protected function registerUserProvider()
     {
-        $this->app['lockdown.user']    =    $this->app->share(
+        $this->app['lockdown.user'] = $this->app->share(
             function ($app) {
-                $userModel    =    config('lockdown.user');
+                $userModel = config('lockdown.user');
                 return new UserProvider($userModel);
+            }
+        );
+        
+        $this->app['auth']->provider(
+            'lockdown',
+            function ($app) {
+                return $app['lockdown.user'];
             }
         );
     }
@@ -226,7 +240,7 @@ class LockdownServiceProvider extends ServiceProvider
                 );
             }
         );
-        $this->app->alias('lockdown', 'Reflex\Lockdown\Lockdown');
+        $this->app->alias('lockdown', Reflex\Lockdown\Lockdown::class);
     }
 
     /**
