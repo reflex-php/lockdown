@@ -4,6 +4,7 @@ namespace Reflex\Lockdown\Users\Eloquent;
 use Reflex\Lockdown\Roles\RoleInterface;
 use Reflex\Lockdown\Users\ProviderInterface;
 use Illuminate\Auth\EloquentUserProvider;
+use Illuminate\Contracts\Auth\UserProvider;
 
 class Provider extends EloquentUserProvider implements UserProvider
 {
