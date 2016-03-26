@@ -116,7 +116,7 @@ class User extends Model implements
     public function roles()
     {
         return $this->belongsToMany(
-            'Reflex\Lockdown\Roles\Eloquent\Role',
+            \Reflex\Lockdown\Roles\Eloquent\Role::class,
             'lockdown_user_roles',
             'user_id',
             'role_id'

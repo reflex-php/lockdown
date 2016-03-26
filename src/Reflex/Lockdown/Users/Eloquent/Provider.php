@@ -3,70 +3,10 @@ namespace Reflex\Lockdown\Users\Eloquent;
 
 use Reflex\Lockdown\Roles\RoleInterface;
 use Reflex\Lockdown\Users\ProviderInterface;
+use Illuminate\Auth\EloquentUserProvider;
 
-class Provider implements ProviderInterface
+class Provider extends EloquentUserProvider implements UserProvider
 {
-    /**
-     * Model to be provided
-     * @var string
-     */
-    protected $model;
-
-    /**
-     * Constructor
-     * @param string $model
-     * @return void
-     */
-    public function __construct($model = null)
-    {
-        $this->model    =   $model;
-    }
-
-    /**
-     * Create instance of the model
-     * @return Reflex\Lockdown\Roles\UserInterface
-     */
-    protected function createModelInstance()
-    {
-        return new $this->model;
-    }
-
-    /**
-     * Find role by ID
-     * @param  integer $id
-     * @return Reflex\Lockdown\Roles\UserInterface
-     */
-    public function findById($id)
-    {
-        $model  =   $this->model;
-        return $model::find($id);
-    }
-
-    /**
-     * Find user by login
-     * @param  string $login
-     * @return Reflex\Lockdown\Users\UserInterface
-     */
-    public function findByLogin($login)
-    {
-        $model  =   $this->createModelInstance();
-        return $model->where(
-            $model->getLoginAttribute(),
-            $login
-        )
-            ->first();
-    }
-
-    /**
-     * Get all users
-     * @return array
-     */
-    public function findAll()
-    {
-        $model  =   $this->model;
-        return $model::get()->all();
-    }
-
     /**
      * Find users with permission
      * @param  string|Reflex\Lockdown\Permissions\PermissionInterface $permission
